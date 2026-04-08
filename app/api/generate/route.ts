@@ -50,7 +50,7 @@ export async function POST(req: Request) {
         {
           role: "system",
           content:
-            "You are a product concept illustrator. Given a Chinese product/service description targeting the 'loneliness economy' (孤独经济), create a detailed DALL-E 3 prompt in English for a modern, clean product concept illustration. Style: flat design, soft warm colors, friendly and inviting. Show the product being used by people. Output ONLY the English prompt, under 150 words.",
+            "You are a product concept illustrator. Given a Chinese product/service description targeting the 'loneliness economy' (孤独经济), create a detailed DALL-E 3 prompt in English for a modern, clean product concept illustration. IMPORTANT: Generate ONE single cohesive scene, NOT a collage, NOT multiple panels, NOT split images. Style: flat design, soft warm colors, friendly and inviting. Show the product being used by a person in a single unified scene. Output ONLY the English prompt, under 150 words.",
         },
         {
           role: "user",

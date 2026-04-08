@@ -37,22 +37,23 @@ const hasRedis = !!(
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
 );
 
-function redis() {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Redis } = require("@upstash/redis") as typeof import("@upstash/redis");
+async function redis() {
+  const { Redis } = await import("@upstash/redis");
   return Redis.fromEnv();
 }
 
 export async function getGroup(id: number): Promise<GroupData | null> {
   if (hasRedis) {
-    return redis().get<GroupData>(`group:${id}`);
+    const r = await redis();
+    return r.get<GroupData>(`group:${id}`);
   }
   return memStore.get(`group:${id}`) ?? null;
 }
 
 export async function setGroup(id: number, data: GroupData): Promise<void> {
   if (hasRedis) {
-    await redis().set(`group:${id}`, data);
+    const r = await redis();
+    await r.set(`group:${id}`, data);
     return;
   }
   memStore.set(`group:${id}`, data);
@@ -66,7 +67,7 @@ export async function getAllGroups(): Promise<(GroupData | null)[]> {
 
 export async function resetAllGroups(): Promise<void> {
   if (hasRedis) {
-    const r = redis();
+    const r = await redis();
     await Promise.all(ALL_GROUP_IDS.map((id) => r.del(`group:${id}`)));
     return;
   }
