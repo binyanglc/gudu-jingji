@@ -1,3 +1,5 @@
+import { Redis } from "@upstash/redis";
+
 export interface GroupData {
   id: number;
   name: string;
@@ -9,11 +11,11 @@ export interface GroupData {
 }
 
 const GROUP_NAMES: Record<number, string> = {
-  1: '第一组',
-  2: '第二组',
-  3: '第三组',
-  4: '第四组',
-  5: '老师体验组',
+  1: "第一组",
+  2: "第二组",
+  3: "第三组",
+  4: "第四组",
+  5: "老师体验组",
 };
 
 const GROUP_MEMBERS: Record<number, number> = {
@@ -25,34 +27,35 @@ const GROUP_MEMBERS: Record<number, number> = {
 };
 
 export function getGroupMeta(id: number) {
-  return { name: GROUP_NAMES[id] || `第${id}组`, members: GROUP_MEMBERS[id] || 2 };
+  return {
+    name: GROUP_NAMES[id] || `第${id}组`,
+    members: GROUP_MEMBERS[id] || 2,
+  };
 }
 
-// In-memory fallback for local development (persists across HMR)
+// In-memory fallback for local development
 const g = globalThis as unknown as { __memStore?: Map<string, GroupData> };
 if (!g.__memStore) g.__memStore = new Map();
 const memStore = g.__memStore;
 
-const hasRedis = !!(
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-);
-
-async function redis() {
-  const { Redis } = await import("@upstash/redis");
-  return Redis.fromEnv();
+function getRedis(): Redis | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  return new Redis({ url, token });
 }
 
 export async function getGroup(id: number): Promise<GroupData | null> {
-  if (hasRedis) {
-    const r = await redis();
+  const r = getRedis();
+  if (r) {
     return r.get<GroupData>(`group:${id}`);
   }
   return memStore.get(`group:${id}`) ?? null;
 }
 
 export async function setGroup(id: number, data: GroupData): Promise<void> {
-  if (hasRedis) {
-    const r = await redis();
+  const r = getRedis();
+  if (r) {
     await r.set(`group:${id}`, data);
     return;
   }
@@ -66,8 +69,8 @@ export async function getAllGroups(): Promise<(GroupData | null)[]> {
 }
 
 export async function resetAllGroups(): Promise<void> {
-  if (hasRedis) {
-    const r = await redis();
+  const r = getRedis();
+  if (r) {
     await Promise.all(ALL_GROUP_IDS.map((id) => r.del(`group:${id}`)));
     return;
   }

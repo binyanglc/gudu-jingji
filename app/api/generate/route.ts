@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { getGroup, setGroup, getGroupMeta } from "@/lib/store";
 
-export const runtime = "edge";
+export const maxDuration = 60;
 
 const MAX_GENERATIONS = 5;
 
