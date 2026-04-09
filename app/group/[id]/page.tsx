@@ -420,7 +420,7 @@ export default function GroupWorkspace() {
                 type="text"
                 value={imgPlace}
                 onChange={(e) => setImgPlace(e.target.value)}
-                placeholder="e.g. 一个餐厅，名字叫"不孤单""
+                placeholder={'e.g. 一个餐厅，名字叫"不孤单"'}
                 disabled={submitted}
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition-all text-sm disabled:bg-gray-50 disabled:text-gray-500"
               />
