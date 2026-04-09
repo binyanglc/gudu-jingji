@@ -4,32 +4,48 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
-const GROUP_META: Record<string, { name: string; members: number }> = {
-  "1": { name: "第一组", members: 3 },
-  "2": { name: "第二组", members: 3 },
-  "3": { name: "第三组", members: 3 },
-  "4": { name: "第四组", members: 2 },
-  "5": { name: "老师体验组", members: 0 },
+const GROUP_META: Record<string, { name: string; nameZh: string; members: number }> = {
+  "1": { name: "Group 1", nameZh: "第一组", members: 3 },
+  "2": { name: "Group 2", nameZh: "第二组", members: 3 },
+  "3": { name: "Group 3", nameZh: "第三组", members: 3 },
+  "4": { name: "Group 4", nameZh: "第四组", members: 2 },
+  "5": { name: "Teacher Demo", nameZh: "老师体验组", members: 0 },
 };
 
 const MAX_GEN = 5;
 
 const VOCAB = [
-  "消费", "需求", "品质", "个性", "各种", "甚至", "方面", "培养",
-  "专业", "稳定", "支持", "超过", "占", "年龄", "青年", "中年",
-  "价格", "解决", "机器人", "养老", "教育", "积蓄", "工资", "贷款",
+  "消费", "需求", "品质", "个性", "各种", "甚至",
+  "支持", "超过", "占", "青年", "中年", "价格",
+  "解决", "机器人", "养老", "教育",
 ];
 
 const GRAMMAR = [
-  { id: 1, name: "疑问代词任指", example: "什么……都……  /  谁……都……" },
-  { id: 2, name: "分数 / 百分数 / 倍数", example: "三分之一 / 百分之六十 / 两倍" },
-  { id: 3, name: "除了……以外，还/也……", example: "除了价格以外，还要考虑品质" },
-  { id: 4, name: "一……也/都+没/不……", example: "一分钱都不浪费" },
+  {
+    id: 1,
+    pattern: "什么……都……",
+    meaning: "表示没有例外，全部包括",
+    example: "我们的产品什么人都可以用。",
+  },
+  {
+    id: 2,
+    pattern: "分数 / 百分数",
+    meaning: "表示数量或比例",
+    example: "超过百分之六十的年轻人有这个需求。",
+  },
+  {
+    id: 3,
+    pattern: "除了……以外，还/也……",
+    meaning: "在某事物之外，还有另外的",
+    example: "除了价格以外，消费者还很看重品质。",
+  },
+  {
+    id: 4,
+    pattern: "一……也/都 + 不/没……",
+    meaning: "强调完全没有，一点儿都不",
+    example: "用了这个产品，一点儿都不孤独了。",
+  },
 ];
-
-const PLACEHOLDER = `参考模板（可自由发挥）：
-
-这是一个为______（目标人群）设计的______（产品名称）。现在，超过百分之______的______人______。除了______以外，他们还______。这个产品很______，什么______都能______。对______来说，一______也/都不______。`;
 
 export default function GroupWorkspace() {
   const params = useParams();
@@ -74,7 +90,7 @@ export default function GroupWorkspace() {
 
   async function handleGenerate() {
     if (!productName.trim() || !description.trim()) {
-      setError("请填写产品名称和产品介绍");
+      setError("Please fill in both product name and description.");
       return;
     }
     setError("");
@@ -87,13 +103,13 @@ export default function GroupWorkspace() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "生成失败");
+        setError(data.error || "Generation failed");
         return;
       }
       setImageUrl(data.imageUrl);
       setGenCount(data.generationCount);
     } catch {
-      setError("网络错误，请重试");
+      setError("Network error, please try again.");
     } finally {
       setLoading(false);
     }
@@ -110,12 +126,12 @@ export default function GroupWorkspace() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "提交失败");
+        setError(data.error || "Submission failed");
         return;
       }
       setSubmitted(true);
     } catch {
-      setError("提交失败，请重试");
+      setError("Submission failed, please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -126,7 +142,7 @@ export default function GroupWorkspace() {
   if (pageLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-400 text-lg">加载中...</div>
+        <div className="text-gray-400 text-lg">Loading...</div>
       </div>
     );
   }
@@ -143,16 +159,16 @@ export default function GroupWorkspace() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            返回
+            Back
           </Link>
           <div className="text-center">
             <span className="font-bold text-gray-900">{meta.name}</span>
             {meta.members > 0 && (
-              <span className="text-gray-400 text-sm ml-2">{meta.members}人</span>
+              <span className="text-gray-400 text-sm ml-2">{meta.members} members</span>
             )}
           </div>
           <div className="text-sm text-gray-500">
-            {genCount}/{MAX_GEN} 次
+            {genCount}/{MAX_GEN} used
           </div>
         </div>
       </header>
@@ -165,7 +181,7 @@ export default function GroupWorkspace() {
             className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
           >
             <span className="font-medium text-gray-900">
-              📋 词汇和语法提示
+              📋 Vocabulary &amp; Grammar Reference
             </span>
             <svg
               className={`w-5 h-5 text-gray-400 transition-transform ${showGuide ? "rotate-180" : ""}`}
@@ -180,7 +196,7 @@ export default function GroupWorkspace() {
             <div className="px-5 pb-5 space-y-4 border-t border-gray-100 pt-4">
               <div>
                 <h3 className="text-sm font-medium text-rose-600 mb-2">
-                  必须使用的生词（至少 5 个）
+                  Required Vocabulary (use at least 5)
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {VOCAB.map((w) => (
@@ -195,24 +211,27 @@ export default function GroupWorkspace() {
               </div>
               <div>
                 <h3 className="text-sm font-medium text-amber-600 mb-2">
-                  必须使用的语法（至少 2 个）
+                  Required Grammar (use at least 2)
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {GRAMMAR.map((g) => (
                     <div
                       key={g.id}
                       className="flex items-start gap-2 text-sm"
                     >
-                      <span className="shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">
+                      <span className="shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold mt-0.5">
                         {g.id}
                       </span>
                       <div>
-                        <span className="font-medium text-gray-900">
-                          {g.name}
-                        </span>
-                        <span className="text-gray-500 ml-2">
-                          {g.example}
-                        </span>
+                        <div className="font-medium text-gray-900">
+                          {g.pattern}
+                        </div>
+                        <div className="text-gray-500">
+                          {g.meaning}
+                        </div>
+                        <div className="text-gray-400 italic mt-0.5">
+                          e.g. {g.example}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -226,25 +245,23 @@ export default function GroupWorkspace() {
         <section className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              产品 / 服务名称
+              Product / Service Name 产品名称
             </label>
             <input
               type="text"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
-              placeholder='例如：智能陪伴机器人、"不孤单"社交平台'
               disabled={submitted}
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 outline-none transition-all disabled:bg-gray-50 disabled:text-gray-500"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              产品介绍（此文字将直接用于生成图片）
+              Product Description 产品介绍（used to generate the image）
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={PLACEHOLDER}
               disabled={submitted}
               rows={8}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 outline-none transition-all resize-none disabled:bg-gray-50 disabled:text-gray-500 text-sm leading-relaxed"
@@ -272,12 +289,12 @@ export default function GroupWorkspace() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                AI 正在创作中...（约 15-30 秒）
+                AI is generating... (~15-30s)
               </span>
             ) : genCount >= MAX_GEN ? (
-              "已达到生成上限"
+              "Generation limit reached"
             ) : (
-              `🎨 生成图片（${genCount}/${MAX_GEN}）`
+              `🎨 Generate Image (${genCount}/${MAX_GEN})`
             )}
           </button>
         )}
@@ -291,7 +308,7 @@ export default function GroupWorkspace() {
               <div className="animate-fade-in">
                 <img
                   src={imageUrl}
-                  alt="AI 生成的产品概念图"
+                  alt="AI generated product concept"
                   className="w-full aspect-square object-cover"
                 />
               </div>
@@ -306,7 +323,7 @@ export default function GroupWorkspace() {
             disabled={submitting}
             className="w-full py-3.5 rounded-xl font-medium text-white bg-gray-900 hover:bg-gray-700 transition-all shadow-sm hover:shadow-md disabled:opacity-50"
           >
-            {submitting ? "提交中..." : "✅ 提交最终作品"}
+            {submitting ? "Submitting..." : "✅ Submit Final Work"}
           </button>
         )}
 
@@ -315,10 +332,10 @@ export default function GroupWorkspace() {
           <div className="text-center py-8 animate-fade-in">
             <div className="text-4xl mb-3">🎉</div>
             <h2 className="text-xl font-bold text-gray-900 mb-1">
-              提交成功！
+              Submitted!
             </h2>
             <p className="text-gray-500 text-sm">
-              你们的作品已经出现在展示墙上了，准备好上台展示吧！
+              Your work is now on the gallery wall. Get ready to present!
             </p>
           </div>
         )}

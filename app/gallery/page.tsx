@@ -13,7 +13,7 @@ interface GroupData {
   generationCount: number;
 }
 
-const PLACEHOLDER_NAMES = ["第一组", "第二组", "第三组", "第四组", "老师体验组"];
+const PLACEHOLDER_NAMES = ["Group 1", "Group 2", "Group 3", "Group 4", "Teacher Demo"];
 
 export default function Gallery() {
   const [groups, setGroups] = useState<(GroupData | null)[]>([
@@ -43,7 +43,7 @@ export default function Gallery() {
   }, [loadGroups]);
 
   async function handleReset() {
-    if (!confirm("确定要重置所有组的数据吗？此操作不可撤销。")) return;
+    if (!confirm("Reset all group data? This cannot be undone.")) return;
     setResetting(true);
     try {
       await fetch("/api/reset", { method: "POST" });
@@ -83,12 +83,12 @@ export default function Gallery() {
                 onClick={() => setExpanded(null)}
                 className="mt-4 text-sm text-gray-500 hover:text-white transition-colors"
               >
-                按任意处关闭
+                Click anywhere to close
               </button>
             </div>
           </div>
         ) : (
-          <div className="text-gray-500 text-lg">暂无作品</div>
+          <div className="text-gray-500 text-lg">No submission yet</div>
         )}
       </div>
     );
@@ -118,14 +118,14 @@ export default function Gallery() {
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-            返回
+            Back
           </Link>
           <div className="text-center">
             <h1 className="text-xl font-bold text-gray-900">
-              展示墙 · 孤独经济创意产品
+              Gallery · Loneliness Economy Products
             </h1>
             <p className="text-xs text-gray-500 mt-0.5">
-              {submittedCount}/{totalGroups} 组已提交 · 每 5 秒自动刷新
+              {submittedCount}/{totalGroups} submitted · Auto-refresh every 5s
             </p>
           </div>
           <button
@@ -133,7 +133,7 @@ export default function Gallery() {
             disabled={resetting}
             className="text-sm text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
           >
-            {resetting ? "重置中..." : "重置全部"}
+            {resetting ? "Resetting..." : "Reset All"}
           </button>
         </div>
       </header>
@@ -160,12 +160,12 @@ export default function Gallery() {
                     />
                     {g.submitted && (
                       <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                        已提交
+                        Submitted
                       </div>
                     )}
                     {!g.submitted && (
                       <div className="absolute top-3 right-3 bg-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                        创作中
+                        In Progress
                       </div>
                     )}
                   </div>
@@ -175,7 +175,7 @@ export default function Gallery() {
                         {g.name}
                       </span>
                       <span className="text-xs text-gray-400">
-                        已生成 {g.generationCount} 次
+                        {g.generationCount} generations
                       </span>
                     </div>
                     <h3 className="text-lg font-bold text-gray-900 mb-2">
@@ -204,7 +204,7 @@ export default function Gallery() {
                   <span className="text-lg font-medium">
                     {PLACEHOLDER_NAMES[idx]}
                   </span>
-                  <span className="text-sm mt-1">等待创作中...</span>
+                  <span className="text-sm mt-1">Waiting for submission...</span>
                 </div>
               )}
             </div>
