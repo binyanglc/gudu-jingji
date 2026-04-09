@@ -105,6 +105,10 @@ export default function GroupWorkspace() {
 
   const [productName, setProductName] = useState("");
   const [description, setDescription] = useState("");
+  const [imgPlace, setImgPlace] = useState("");
+  const [imgWho, setImgWho] = useState("");
+  const [imgAction, setImgAction] = useState("");
+  const [imgStyle, setImgStyle] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -123,6 +127,10 @@ export default function GroupWorkspace() {
       if (data) {
         setProductName(data.productName || "");
         setDescription(data.description || "");
+        setImgPlace(data.imgPlace || "");
+        setImgWho(data.imgWho || "");
+        setImgAction(data.imgAction || "");
+        setImgStyle(data.imgStyle || "");
         setImageUrl(data.imageUrl || null);
         setSubmitted(data.submitted || false);
         setGenCount(data.generationCount || 0);
@@ -145,13 +153,25 @@ export default function GroupWorkspace() {
       setError("Please fill in both product name and description.");
       return;
     }
+    if (!imgPlace.trim() && !imgWho.trim() && !imgAction.trim()) {
+      setError("Please fill in at least one image description field (place, who, or action).");
+      return;
+    }
     setError("");
     setLoading(true);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId, productName, description }),
+        body: JSON.stringify({
+          groupId,
+          productName,
+          description,
+          imgPlace,
+          imgWho,
+          imgAction,
+          imgStyle,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -369,7 +389,7 @@ export default function GroupWorkspace() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Product Description 产品介绍（used to generate the image）
+              Product Description 产品介绍（for your presentation）
             </label>
             <textarea
               value={description}
@@ -378,6 +398,72 @@ export default function GroupWorkspace() {
               rows={8}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 outline-none transition-all resize-none disabled:bg-gray-50 disabled:text-gray-500 text-sm leading-relaxed"
             />
+          </div>
+        </section>
+
+        {/* Image Description */}
+        <section className="bg-white rounded-2xl border border-purple-200 p-5 space-y-3">
+          <div>
+            <h3 className="text-sm font-medium text-purple-700 mb-0.5">
+              🎨 Image Description 图片描述
+            </h3>
+            <p className="text-xs text-gray-400 mb-3">
+              Describe the image you want AI to generate. Write in Chinese!
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                📍 地方 Place
+              </label>
+              <input
+                type="text"
+                value={imgPlace}
+                onChange={(e) => setImgPlace(e.target.value)}
+                placeholder="e.g. 一个餐厅，名字叫"不孤单""
+                disabled={submitted}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition-all text-sm disabled:bg-gray-50 disabled:text-gray-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                👤 谁 Who
+              </label>
+              <input
+                type="text"
+                value={imgWho}
+                onChange={(e) => setImgWho(e.target.value)}
+                placeholder="e.g. 一个中国女生和一个机器人"
+                disabled={submitted}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition-all text-sm disabled:bg-gray-50 disabled:text-gray-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                🎬 在做什么 Doing What
+              </label>
+              <input
+                type="text"
+                value={imgAction}
+                onChange={(e) => setImgAction(e.target.value)}
+                placeholder="e.g. 女生在吃饺子，机器人跟她聊天"
+                disabled={submitted}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition-all text-sm disabled:bg-gray-50 disabled:text-gray-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                🎨 风格 Style
+              </label>
+              <input
+                type="text"
+                value={imgStyle}
+                onChange={(e) => setImgStyle(e.target.value)}
+                placeholder="e.g. 可爱的 / 现代的 / 温暖的"
+                disabled={submitted}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition-all text-sm disabled:bg-gray-50 disabled:text-gray-500"
+              />
+            </div>
           </div>
         </section>
 

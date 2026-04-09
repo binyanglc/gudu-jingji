@@ -5,6 +5,10 @@ export interface GroupData {
   name: string;
   productName: string;
   description: string;
+  imgPlace?: string;
+  imgWho?: string;
+  imgAction?: string;
+  imgStyle?: string;
   imageUrl: string | null;
   submitted: boolean;
   generationCount: number;

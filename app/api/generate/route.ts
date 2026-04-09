@@ -28,7 +28,7 @@ async function persistImage(
 
 export async function POST(req: Request) {
   try {
-    const { groupId, productName, description } = await req.json();
+    const { groupId, productName, description, imgPlace, imgWho, imgAction, imgStyle } = await req.json();
 
     if (!productName?.trim() || !description?.trim()) {
       return NextResponse.json(
@@ -64,17 +64,24 @@ export async function POST(req: Request) {
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+    const imageDescParts = [
+      imgPlace?.trim() && `地方: ${imgPlace.trim()}`,
+      imgWho?.trim() && `谁: ${imgWho.trim()}`,
+      imgAction?.trim() && `在做什么: ${imgAction.trim()}`,
+      imgStyle?.trim() && `风格: ${imgStyle.trim()}`,
+    ].filter(Boolean).join("\n");
+
     const promptResponse = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
           content:
-            "You are a product concept illustrator. Given a Chinese product/service description targeting the 'loneliness economy' (孤独经济), create a detailed DALL-E 3 prompt in English for a modern, clean product concept illustration. IMPORTANT: Generate ONE single cohesive scene, NOT a collage, NOT multiple panels, NOT split images. Style: flat design, soft warm colors, friendly and inviting. Show the product being used by a person in a single unified scene. Output ONLY the English prompt, under 150 words.",
+            "You are a product concept illustrator. Given a Chinese scene description for a product/service in the 'loneliness economy' (孤独经济), create a detailed DALL-E 3 prompt in English. Follow the user's scene description closely: the place, characters, action, and style they specified. IMPORTANT: Generate ONE single cohesive scene, NOT a collage, NOT multiple panels, NOT split images. If no style is specified, default to flat design with soft warm colors. Do NOT include any text or words in the image. Output ONLY the English prompt, under 150 words.",
         },
         {
           role: "user",
-          content: `产品名称: ${productName}\n\n产品介绍: ${description}`,
+          content: `产品名称: ${productName}\n\n图片场景描述:\n${imageDescParts}`,
         },
       ],
       max_tokens: 250,
@@ -115,6 +122,10 @@ export async function POST(req: Request) {
       name: meta.name,
       productName: productName.trim(),
       description: description.trim(),
+      imgPlace: imgPlace?.trim() || "",
+      imgWho: imgWho?.trim() || "",
+      imgAction: imgAction?.trim() || "",
+      imgStyle: imgStyle?.trim() || "",
       imageUrl,
       submitted: false,
       generationCount: newCount,
