@@ -411,7 +411,7 @@ export default function GroupWorkspace() {
               Describe the image you want AI to generate. Write in Chinese!
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 📍 地方 Place

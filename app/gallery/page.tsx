@@ -76,9 +76,6 @@ export default function Gallery() {
                 {g.name}
               </div>
               <h2 className="text-3xl font-bold">{g.productName}</h2>
-              <p className="text-lg leading-relaxed text-gray-300">
-                {g.description}
-              </p>
               <button
                 onClick={() => setExpanded(null)}
                 className="mt-4 text-sm text-gray-500 hover:text-white transition-colors"
@@ -178,12 +175,9 @@ export default function Gallery() {
                         {g.generationCount} generations
                       </span>
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    <h3 className="text-lg font-bold text-gray-900">
                       {g.productName}
                     </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed line-clamp-4">
-                      {g.description}
-                    </p>
                   </div>
                 </>
               ) : (
