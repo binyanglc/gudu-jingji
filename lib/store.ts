@@ -39,10 +39,32 @@ if (!g.__memStore) g.__memStore = new Map();
 const memStore = g.__memStore;
 
 function getRedis(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url =
+    process.env.UPSTASH_REDIS_REST_URL ||
+    process.env.KV_REST_API_URL ||
+    process.env.REDIS_REST_URL ||
+    process.env.REDIS_URL;
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN ||
+    process.env.KV_REST_API_TOKEN ||
+    process.env.REDIS_REST_TOKEN ||
+    process.env.REDIS_TOKEN;
   if (!url || !token) return null;
   return new Redis({ url, token });
+}
+
+export function getRedisStatus() {
+  const envKeys = [
+    "UPSTASH_REDIS_REST_URL",
+    "KV_REST_API_URL",
+    "REDIS_REST_URL",
+    "REDIS_URL",
+  ];
+  const found = envKeys.filter((k) => !!process.env[k]);
+  return {
+    connected: getRedis() !== null,
+    envVarsFound: found,
+  };
 }
 
 export async function getGroup(id: number): Promise<GroupData | null> {
