@@ -21,7 +21,7 @@ async function persistImage(
   const { url } = await put(
     `group-${groupId}/gen-${genCount}.png`,
     blob,
-    { access: "public", contentType: "image/png" }
+    { access: "public", contentType: "image/png", addRandomSuffix: true }
   );
   return url;
 }
