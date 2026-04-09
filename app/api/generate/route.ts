@@ -30,9 +30,9 @@ export async function POST(req: Request) {
   try {
     const { groupId, productName, description, imgPlace, imgWho, imgAction, imgStyle } = await req.json();
 
-    if (!productName?.trim() || !description?.trim()) {
+    if (!productName?.trim()) {
       return NextResponse.json(
-        { error: "Please fill in both product name and description." },
+        { error: "Please fill in the product / service name." },
         { status: 400 }
       );
     }
