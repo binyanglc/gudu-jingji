@@ -1,10 +1,30 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { put } from "@vercel/blob";
 import { getGroup, setGroup, getGroupMeta } from "@/lib/store";
 
 export const maxDuration = 60;
 
 const MAX_GENERATIONS = 5;
+
+async function persistImage(
+  tempUrl: string,
+  groupId: number,
+  genCount: number
+): Promise<string> {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return tempUrl;
+  }
+
+  const res = await fetch(tempUrl);
+  const blob = await res.blob();
+  const { url } = await put(
+    `group-${groupId}/gen-${genCount}.png`,
+    blob,
+    { access: "public", contentType: "image/png" }
+  );
+  return url;
+}
 
 export async function POST(req: Request) {
   try {
@@ -12,14 +32,14 @@ export async function POST(req: Request) {
 
     if (!productName?.trim() || !description?.trim()) {
       return NextResponse.json(
-        { error: "请填写产品名称和产品介绍" },
+        { error: "Please fill in both product name and description." },
         { status: 400 }
       );
     }
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
-        { error: "OpenAI API Key 未配置" },
+        { error: "OpenAI API Key not configured" },
         { status: 500 }
       );
     }
@@ -29,7 +49,7 @@ export async function POST(req: Request) {
 
     if (group?.submitted) {
       return NextResponse.json(
-        { error: "已提交最终作品，无法再生成" },
+        { error: "Already submitted. Cannot generate again." },
         { status: 400 }
       );
     }
@@ -37,7 +57,7 @@ export async function POST(req: Request) {
     const currentCount = group?.generationCount ?? 0;
     if (currentCount >= MAX_GENERATIONS) {
       return NextResponse.json(
-        { error: `已达到生成上限（${MAX_GENERATIONS}次）` },
+        { error: `Generation limit reached (${MAX_GENERATIONS})` },
         { status: 429 }
       );
     }
@@ -63,7 +83,7 @@ export async function POST(req: Request) {
     const imagePrompt =
       promptResponse.choices[0].message.content ?? description;
 
-    let imageUrl: string;
+    let tempImageUrl: string;
     try {
       const imageResponse = await openai.images.generate({
         model: "dall-e-3",
@@ -72,13 +92,13 @@ export async function POST(req: Request) {
         size: "1024x1024",
         quality: "standard",
       });
-      imageUrl = imageResponse.data?.[0]?.url ?? "";
+      tempImageUrl = imageResponse.data?.[0]?.url ?? "";
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "图片生成失败";
+        err instanceof Error ? err.message : "Image generation failed";
       if (msg.includes("content_policy")) {
         return NextResponse.json(
-          { error: "图片内容不符合规范，请修改描述后重试（不扣次数）" },
+          { error: "Content policy violation. Please revise your description. (does not count as an attempt)" },
           { status: 400 }
         );
       }
@@ -87,6 +107,8 @@ export async function POST(req: Request) {
 
     const meta = getGroupMeta(id);
     const newCount = currentCount + 1;
+
+    const imageUrl = await persistImage(tempImageUrl, id, newCount);
 
     await setGroup(id, {
       id,
@@ -101,9 +123,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ imageUrl, generationCount: newCount });
   } catch (err: unknown) {
     console.error("Generate error:", err);
-    const message = err instanceof Error ? err.message : "未知错误";
+    const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
-      { error: `生成失败: ${message}` },
+      { error: `Generation failed: ${message}` },
       { status: 500 }
     );
   }
