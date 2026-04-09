@@ -16,36 +16,82 @@ const MAX_GEN = 5;
 
 const VOCAB = [
   "消费", "需求", "品质", "个性", "各种", "甚至",
-  "支持", "超过", "占", "青年", "中年", "价格",
-  "解决", "机器人", "养老", "教育",
+  "支持", "培养", "青年", "中年", "解决", "考虑",
+  "扫", "机器人", "教育", "可见", "玩具",
 ];
 
 const GRAMMAR = [
   {
     id: 1,
-    pattern: "什么……都……",
-    meaning: "表示没有例外，全部包括",
-    example: "我们的产品什么人都可以用。",
+    pattern: "什么时候都 / 谁都 / 什么都……",
+    english: "whenever / whoever / whatever...",
+    examples: [
+      "我们的产品什么时候都可以用，就算是晚上12点也可以用。",
+      "刚到新的城市，谁都不认识，那怎么办呢？",
+    ],
   },
   {
     id: 2,
-    pattern: "分数 / 百分数",
-    meaning: "表示数量或比例",
-    example: "超过百分之六十的年轻人有这个需求。",
+    pattern: "number 分之 number",
+    english: "X out of Y / X percent",
+    examples: [
+      "超过百分之六十的年轻人有这个需求。",
+    ],
   },
   {
     id: 3,
-    pattern: "除了……以外，还/也……",
-    meaning: "在某事物之外，还有另外的",
-    example: "除了价格以外，消费者还很看重品质。",
+    pattern: "除了……以外，还/也……\n除了……以外，都……",
+    english: "In addition to..., also... / Except for..., all...",
+    examples: [
+      "除了可以喝咖啡以外，人们还可以跟店里的宠物玩。",
+    ],
   },
   {
     id: 4,
     pattern: "一……也/都 + 不/没……",
-    meaning: "强调完全没有，一点儿都不",
-    example: "用了这个产品，一点儿都不孤独了。",
+    english: "not even a little... / not... at all",
+    examples: [
+      "用了这个产品，一点儿都不孤独了。",
+    ],
   },
 ];
+
+const PITCH_GUIDE = [
+  {
+    step: 1,
+    title: "The Problem",
+    titleZh: "需求 & 问题",
+    hint: "What problem exists? How many people have this need?",
+    hintZh: "现在有什么问题？多少人有这样的需求？",
+  },
+  {
+    step: 2,
+    title: "Your Solution",
+    titleZh: "你的产品",
+    hint: "What is your product? Who is it designed for?",
+    hintZh: "你的产品叫什么？是为谁设计的？",
+  },
+  {
+    step: 3,
+    title: "Key Features",
+    titleZh: "功能 & 特点",
+    hint: "What's special about it? What can people do with it?",
+    hintZh: "你的产品有什么特别的？跟别的有什么不一样？",
+  },
+  {
+    step: 4,
+    title: "Impact",
+    titleZh: "效果 & 影响",
+    hint: "What changes after using it? What problem does it solve?",
+    hintZh: "用了以后有什么变化？解决了什么问题？",
+  },
+];
+
+const SAMPLE_TEXT = `现在很多青年一个人住在大城市，什么时候都是一个人吃饭。百分之六十的年轻人觉得一个人去餐厅很不好意思。可见，一个人吃饭的需求很大，但是各种餐厅都不考虑这些人。
+
+"不孤单"一人食餐厅就是为他们设计的。除了可以一个人安静地吃饭以外，每个座位还有一个小机器人玩具陪你聊天。我们培养了专业的厨师，支持高品质的个性化菜单。
+
+用了我们的服务，一点儿都不觉得孤独了！甚至很多消费者觉得一个人吃饭比跟朋友吃饭还自在。来扫我们的二维码，解决你一个人吃饭的问题吧！`;
 
 export default function GroupWorkspace() {
   const params = useParams();
@@ -61,6 +107,8 @@ export default function GroupWorkspace() {
   const [genCount, setGenCount] = useState(0);
   const [error, setError] = useState("");
   const [showGuide, setShowGuide] = useState(true);
+  const [showPitch, setShowPitch] = useState(false);
+  const [showSample, setShowSample] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -223,19 +271,79 @@ export default function GroupWorkspace() {
                         {g.id}
                       </span>
                       <div>
-                        <div className="font-medium text-gray-900">
-                          {g.pattern}
+                        {g.pattern.split("\n").map((line, i) => (
+                          <div key={i} className="font-medium text-gray-900">
+                            {line}
+                          </div>
+                        ))}
+                        <div className="text-blue-600 text-xs mt-0.5">
+                          {g.english}
                         </div>
-                        <div className="text-gray-500">
-                          {g.meaning}
-                        </div>
-                        <div className="text-gray-400 italic mt-0.5">
-                          e.g. {g.example}
-                        </div>
+                        {g.examples.map((ex, i) => (
+                          <div key={i} className="text-gray-400 italic mt-0.5">
+                            e.g. {ex}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Pitch Guide */}
+        <section className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <button
+            onClick={() => setShowPitch(!showPitch)}
+            className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+          >
+            <span className="font-medium text-gray-900">
+              🗣️ How to Structure Your Pitch 产品介绍思路
+            </span>
+            <svg
+              className={`w-5 h-5 text-gray-400 transition-transform ${showPitch ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {showPitch && (
+            <div className="px-5 pb-5 border-t border-gray-100 pt-4 space-y-3">
+              {PITCH_GUIDE.map((p) => (
+                <div key={p.step} className="flex items-start gap-3">
+                  <span className="shrink-0 w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold">
+                    {p.step}
+                  </span>
+                  <div className="text-sm">
+                    <div className="font-medium text-gray-900">
+                      {p.title} {p.titleZh}
+                    </div>
+                    <div className="text-gray-500">{p.hint}</div>
+                    <div className="text-gray-400">{p.hintZh}</div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Sample toggle */}
+              <div className="pt-2 border-t border-gray-100">
+                <button
+                  onClick={() => setShowSample(!showSample)}
+                  className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+                >
+                  {showSample ? "▾ Hide Example 隐藏示例" : "▸ Show Example 查看示例：一人食餐厅 \"不孤单\""}
+                </button>
+                {showSample && (
+                  <div className="mt-3 p-4 bg-indigo-50 rounded-xl text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                    <div className="font-medium text-indigo-800 mb-2">
+                      一人食餐厅 &quot;不孤单&quot;
+                    </div>
+                    {SAMPLE_TEXT}
+                  </div>
+                )}
               </div>
             </div>
           )}
