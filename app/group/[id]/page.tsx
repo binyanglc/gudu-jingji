@@ -386,25 +386,34 @@ export default function GroupWorkspace() {
 
         {/* Generate Button */}
         {!submitted && (
-          <button
-            onClick={handleGenerate}
-            disabled={loading || genCount >= MAX_GEN}
-            className="w-full py-3.5 rounded-xl font-medium text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-sm hover:shadow-md"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                AI is generating... (~15-30s)
-              </span>
-            ) : genCount >= MAX_GEN ? (
-              "Generation limit reached"
-            ) : (
-              `🎨 Generate Image (${genCount}/${MAX_GEN})`
-            )}
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={handleGenerate}
+              disabled={loading || genCount >= MAX_GEN}
+              className="w-full py-3.5 rounded-xl font-medium text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-sm hover:shadow-md"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  AI is generating... (~15-30s)
+                </span>
+              ) : genCount >= MAX_GEN ? (
+                "Generation limit reached"
+              ) : genCount === 0 ? (
+                `🎨 Generate Image`
+              ) : (
+                `🎨 Regenerate Image (${MAX_GEN - genCount} left)`
+              )}
+            </button>
+            <p className="text-xs text-center text-gray-400">
+              {genCount >= MAX_GEN
+                ? "You've used all 5 attempts. Please submit your current image."
+                : `You can edit your text and regenerate up to ${MAX_GEN} times total. Pick your favorite before submitting!`}
+            </p>
+          </div>
         )}
 
         {/* Generated Image */}
@@ -426,13 +435,22 @@ export default function GroupWorkspace() {
 
         {/* Submit Button */}
         {imageUrl && !submitted && (
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="w-full py-3.5 rounded-xl font-medium text-white bg-gray-900 hover:bg-gray-700 transition-all shadow-sm hover:shadow-md disabled:opacity-50"
-          >
-            {submitting ? "Submitting..." : "✅ Submit Final Work"}
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => {
+                if (confirm("Are you sure? Once submitted, you cannot edit or regenerate.\n确定提交吗？提交后不能再修改。")) {
+                  handleSubmit();
+                }
+              }}
+              disabled={submitting}
+              className="w-full py-3.5 rounded-xl font-medium text-white bg-gray-900 hover:bg-gray-700 transition-all shadow-sm hover:shadow-md disabled:opacity-50"
+            >
+              {submitting ? "Submitting..." : "✅ Submit Final Work"}
+            </button>
+            <p className="text-xs text-center text-amber-600">
+              ⚠️ Once submitted, your work cannot be changed. Make sure you are happy with your image!
+            </p>
+          </div>
         )}
 
         {/* Submitted State */}
